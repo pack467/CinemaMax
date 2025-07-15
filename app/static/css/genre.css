@@ -1,0 +1,411 @@
+/* === CATEGORY PAGE STYLES === */
+.category-container {
+    padding: 3rem 5% 2rem;
+}
+
+.category-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.category-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, #ffffff, var(--accent-teal));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    display: inline-block;
+}
+
+.category-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: var(--accent-teal);
+    border-radius: 3px;
+    box-shadow: 0 0 12px rgba(0, 200, 255, 0.5);
+}
+
+.category-description {
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+/* === CATEGORIES === */
+.categories {
+    padding: 1.5rem 5% 2.5rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.category-list {
+    display: flex;
+    gap: 1.2rem;
+    white-space: nowrap;
+    scroll-behavior: smooth;
+    padding: 1rem 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-blue) transparent;
+    justify-content: center;
+}
+
+.category-list::-webkit-scrollbar {
+    height: 6px;
+}
+
+.category-list::-webkit-scrollbar-thumb {
+    background: var(--accent-blue);
+    border-radius: 4px;
+}
+
+.category-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.category-item {
+    flex: 0 0 auto;
+    min-width: 160px;
+    height: 100px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.6rem;
+    transition: var(--transition);
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.category-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: var(--transition);
+    z-index: -1;
+}
+
+.category-item:hover {
+    background: var(--card-hover);
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+    border-color: var(--accent-blue-light);
+}
+
+.category-item:hover::before {
+    opacity: 0.2;
+}
+
+.category-icon {
+    font-size: 2rem;
+    color: var(--accent-teal);
+    transition: var(--transition);
+}
+
+.category-item:hover .category-icon {
+    transform: scale(1.15) rotate(5deg);
+    color: white;
+}
+
+.category-name {
+    font-weight: 600;
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.category-item:hover .category-name {
+    color: white;
+    letter-spacing: 0.5px;
+}
+
+.filter-btn {
+    padding: 0.8rem 1.8rem;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.filter-btn:hover, .filter-btn.active {
+    background: var(--gradient-primary);
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 15px rgba(26, 115, 232, 0.6);
+}
+
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.8rem;
+    margin-bottom: 3rem;
+}
+
+.movie-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: var(--transition);
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.movie-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    border-color: rgba(26, 115, 232, 0.5);
+    z-index: 10;
+}
+
+.movie-poster-container {
+    position: relative;
+    overflow: hidden;
+    height: 320px;
+}
+
+.movie-poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: var(--transition);
+}
+
+.movie-card:hover .movie-poster {
+    transform: scale(1.05);
+}
+
+.movie-info {
+    padding: 1.2rem;
+    position: relative;
+    z-index: 2;
+    background: rgba(26, 34, 56, 0.9);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Judul Film Card */
+.movie-card .movie-title,
+.movie-card .movie-title:link,
+.movie-card .movie-title:visited,
+.movie-card .movie-title:hover,
+.movie-card .movie-title:active {
+    color: var(--text-primary);    /* Atau #fff jika --text-primary belum ada */
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.movie-card:hover .movie-title {
+    color: var(--accent-teal);
+}
+
+.movie-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+/* =======================
+   PERBAIKAN UTAMA: GENRE
+   ======================= */
+.genre-tag,
+.genre-tag a,
+.genre-tag a:link,
+.genre-tag a:visited,
+.genre-tag a:hover,
+.genre-tag a:active {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary) !important;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 20px;
+    transition: var(--transition);
+    display: inline-block;
+    text-decoration: none !important;
+    border: none;
+    cursor: default;
+}
+
+.movie-card:hover .genre-tag,
+.movie-card:hover .genre-tag a {
+    background: var(--gradient-primary);
+    color: white !important;
+    text-decoration: none !important;
+}
+
+/* Jika genre tag ada di dalam .movie-genres sebagai link */
+.movie-genres a,
+.movie-genres a:link,
+.movie-genres a:visited,
+.movie-genres a:hover,
+.movie-genres a:active {
+    text-decoration: none !important;
+    color: var(--text-secondary) !important;
+    border: none !important;
+    background: none;
+}
+/* =======================
+   END PERBAIKAN UTAMA
+   ======================= */
+
+.movie-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: auto;
+}
+
+.movie-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+}
+
+.movie-rating {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: gold;
+    font-weight: 600;
+}
+
+.movie-rating i {
+    text-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 2rem 0;
+}
+
+.page-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.page-btn:hover, .page-btn.active {
+    background: var(--gradient-primary);
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 4px 15px rgba(26, 115, 232, 0.6);
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+    .category-title {
+        font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .category-title {
+        font-size: 2rem;
+    }
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    nav ul {
+        display: none;
+    }
+    .menu-toggle {
+        display: block;
+    }
+    .category-title {
+        font-size: 1.8rem;
+    }
+    .filter-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.2rem;
+    }
+    .movie-poster-container {
+        height: 260px;
+    }
+    .category-list {
+        justify-content: flex-start;
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .search-bar {
+        display: none;
+    }
+    .category-title {
+        font-size: 1.6rem;
+    }
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    .movie-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    .movie-poster-container {
+        height: 220px;
+    }
+    .movie-title {
+        font-size: 1rem;
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}

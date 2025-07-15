@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaMax Premium - Streaming Film Terbaik</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <!-- Profile Section -->
+    <section class="profile-container">
+        <div class="profile-header">
+            <h1 class="profile-title">Profil Pengguna</h1>
+            <p class="profile-subtitle">
+                Kelola informasi profil Anda dan kontrol bagaimana data Anda digunakan di platform CinemaMax
+            </p>
+        </div>
+        
+        <div class="profile-content">
+            <div class="profile-card">
+                <form method="POST" action="{{ url_for('main.profile') }}" enctype="multipart/form-data" id="profileForm">
+                    <div class="profile-avatar-container">
+                        <div class="profile-avatar">
+                            <img
+                                id="avatarPreview"
+                                src="{% if user.foto_profil %}{{ url_for('static', filename='images/' ~ user.foto_profil) }}{% else %}{{ url_for('static', filename='images/default-avatar.png') }}{% endif %}"
+                                alt="Foto Profil"
+                                style="width:90px; height:90px; object-fit:cover; border-radius:50%; background:#222;"
+                            >
+                            <div class="avatar-overlay">
+                                <label for="fotoProfil" style="cursor:pointer;">
+                                    <i class="fas fa-camera"></i>
+                                </label>
+                            </div>
+                        </div>
+                        <input type="file" id="fotoProfil" name="foto_profil" accept="image/*" style="display:none;">
+                        <div class="change-avatar" style="cursor:pointer;">Ganti Foto Profil</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="username"><i class="fas fa-user"></i> Username</label>
+                        <input type="text" id="username" name="nama_pengguna" class="form-input"
+                            value="{{ user.nama_pengguna }}" placeholder="Masukkan username" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="email"><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="email" name="email" class="form-input"
+                            value="{{ user.email }}" placeholder="Masukkan email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="birthday"><i class="fas fa-birthday-cake"></i> Tanggal Lahir</label>
+                        <input type="date" id="birthday" name="tanggal_lahir" class="form-input"
+                            value="{{ user.tanggal_lahir|default('', true) }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="phone"><i class="fas fa-phone"></i> Nomor Telepon</label>
+                        <input type="tel" id="phone" name="nomor_telepon" class="form-input"
+                            value="{{ user.nomor_telepon|default('', true) }}" placeholder="Masukkan nomor telepon">
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Simpan Perubahan</button>
+                        <a href="{{ url_for('main.beranda') }}" class="btn btn-secondary"><i class="fas fa-times"></i> Batalkan</a>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="profile-card">
+                <!-- FORM GANTI PASSWORD -->
+                <form method="POST" action="{{ url_for('main.ganti_password') }}">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem; display: flex; align-items: center; gap: 0.8rem;">
+                        <i class="fas fa-lock" style="color: var(--accent-teal);"></i> Keamanan Akun
+                    </h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="current-password"><i class="fas fa-key"></i> Password Saat Ini</label>
+                        <div class="password-container">
+                            <input type="password" id="current-password" name="password_lama" class="form-input" placeholder="Masukkan password saat ini" required>
+                            <span class="toggle-password" id="toggleCurrentPassword">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="new-password"><i class="fas fa-key"></i> Password Baru</label>
+                        <div class="password-container">
+                            <input type="password" id="new-password" name="password_baru" class="form-input" placeholder="Masukkan password baru" required>
+                            <span class="toggle-password" id="toggleNewPassword">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="confirm-password"><i class="fas fa-key"></i> Konfirmasi Password</label>
+                        <div class="password-container">
+                            <input type="password" id="confirm-password" name="password_konfirmasi" class="form-input" placeholder="Konfirmasi password baru" required>
+                            <span class="toggle-password" id="toggleConfirmPassword">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-sync-alt"></i> Perbarui Password
+                    </button>
+                </form>
+                
+                <div style="margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                    <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem; display: flex; align-items: center; gap: 0.8rem;">
+                        <i class="fas fa-user-cog" style="color: var(--accent-teal);"></i> Pengaturan Akun
+                    </h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="language"><i class="fas fa-globe"></i> Bahasa</label>
+                        <select id="language" class="form-input">
+                            <option value="id">Bahasa Indonesia</option>
+                            <option value="en">English</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="theme"><i class="fas fa-palette"></i> Tema</label>
+                        <select id="theme" class="form-input">
+                            <option value="dark">Gelap</option>
+                            <option value="light">Terang</option>
+                            <option value="system">Sesuai Sistem</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label class="form-label" for="notifications"><i class="fas fa-bell"></i> Notifikasi Email</label>
+                            <label class="switch">
+                                <input type="checkbox" id="notifications" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% include 'footer.html' %}
+
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/profileDropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/scrollToTop.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/passwordToggle.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/avatar.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/profileImage.js') }}"></script>
+</body>
+</html>

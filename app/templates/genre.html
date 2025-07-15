@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaMax Premium - Kategori Film</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/genre.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <style>
+        /* Supaya .category-item tetap clickable dan ada efek active */
+        .category-item.active, .category-item:hover {
+            background: #1a7ddb;
+            color: #fff;
+            box-shadow: 0 6px 20px 0 rgba(30,100,220,0.14);
+        }
+        .category-item {
+            cursor:pointer;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+    <section class="category-container">
+        <div class="category-header">
+            <h1 class="category-title">Jelajahi Genre Film</h1>
+            <p class="category-description">
+                Temukan ribuan film berkualitas dari berbagai genre.<br>
+                Pilih genre favorit Anda dan nikmati koleksi terbaik CinemaMax!
+            </p>
+        </div>
+        <!-- GENRE BUTTONS (DYNAMIC) -->
+        <section class="categories">
+            <div class="category-list" id="genreBtns"></div>
+        </section>
+        <!-- MOVIE GRID -->
+        <div class="movie-grid" id="movieGrid"></div>
+        <div class="pagination" id="paginationContainer"></div>
+    </section>
+    {% include 'footer.html' %}
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const genreBtnsDiv = document.getElementById('genreBtns');
+    const movieGrid = document.getElementById('movieGrid');
+    const paginationContainer = document.getElementById('paginationContainer');
+    let currentGenre = '';
+    let currentPage = 1;
+    let allGenres = [];
+
+    // Mapping genre name to FontAwesome icon (bisa diubah/ditambah sesuai kebutuhan)
+    const genreIconMap = {
+        "Drama": "fa-gem",
+        "Crime": "fa-user-secret",
+        "Comedy": "fa-laugh",
+        "Sci-Fi": "fa-robot",
+        "Fantasy": "fa-dragon",
+        "Action": "fa-fighter-jet",
+        "Adventure": "fa-space-shuttle",
+        "Thriller": "fa-bolt",
+        "Animation": "fa-film",
+        "Romance": "fa-heart",
+        "Horror": "fa-ghost",
+        // tambahkan mapping lain sesuai genre di database
+    };
+
+    // 1. Fetch all genres from Flask endpoint
+    fetch('/genre_data?all_genres=1')
+        .then(resp => resp.json())
+        .then(data => {
+            allGenres = data.genres || [];
+            renderGenreBtns(allGenres);
+            if (allGenres.length > 0) {
+                fetchAndRenderFilms(allGenres[0], 1);
+            }
+        });
+
+    function renderGenreBtns(genres) {
+        genreBtnsDiv.innerHTML = '';
+        genres.forEach((genre, i) => {
+            let icon = genreIconMap[genre] || "fa-film";
+            let btn = document.createElement('div');
+            btn.className = 'category-item' + (i===0 ? ' active' : '');
+            btn.innerHTML = `<i class="fas ${icon} category-icon"></i><span class="category-name">${genre}</span>`;
+            btn.setAttribute('data-genre', genre);
+            btn.onclick = function() {
+                document.querySelectorAll('.category-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentGenre = genre;
+                currentPage = 1;
+                fetchAndRenderFilms(genre, 1);
+            }
+            genreBtnsDiv.appendChild(btn);
+        });
+        if (genres.length) {
+            currentGenre = genres[0];
+        }
+    }
+
+    function fetchAndRenderFilms(genre, page) {
+        fetch(`/genre_data?genre=${encodeURIComponent(genre)}&page=${page}`)
+            .then(resp => resp.json())
+            .then(data => {
+                renderMovieGrid(data.films || []);
+                renderPagination(data.total || 0, page, genre);
+            });
+    }
+
+    function renderMovieGrid(films) {
+        movieGrid.innerHTML = '';
+        if (!films.length) {
+            movieGrid.innerHTML = '<p style="text-align:center;">Tidak ada film.</p>';
+            return;
+        }
+        films.forEach(film => {
+            let genresHtml = (film.genres_list || []).map(g => `<span class="genre-tag">${g}</span>`).join('');
+            let poster = film.gambar_portrait && film.gambar_portrait.trim() !== ''
+                ? `/static/covers/${film.gambar_portrait}`
+                : '/static/covers/No-Image_Availbale-Potrait.png';
+            movieGrid.innerHTML += `
+                <a href="/watch?id=${film.id}" class="movie-card" title="${film.judul}">
+                    <img src="${poster}" alt="${film.judul}" class="movie-poster"
+                        onerror="this.onerror=null;this.src='/static/covers/No-Image_Availbale-Potrait.png';">
+                    <div class="movie-info">
+                        <h3 class="movie-title" title="${film.judul}">${film.judul}</h3>
+                        <div class="movie-meta">
+                            <span>${film.tahun_rilis || '-'}</span>
+                            <span class="movie-rating"><i class="fas fa-star"></i> ${film.rating ? Number(film.rating).toFixed(1) : '-'}</span>
+                        </div>
+                        <div class="movie-genres">${genresHtml}</div>
+                    </div>
+                </a>`;
+        });
+    }
+
+    function renderPagination(total, page, genre) {
+        const perPage = 18;
+        const totalPages = Math.ceil(total / perPage);
+        let html = '';
+        if (totalPages <= 1) { paginationContainer.innerHTML = ''; return; }
+        if (page > 1) {
+            html += `<button class="page-btn" data-page="${page - 1}"><i class="fas fa-chevron-left"></i></button>`;
+        }
+        let startPage = Math.max(1, page - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+        if (startPage > 1) {
+            html += `<button class="page-btn" data-page="1">1</button>`;
+            if (startPage > 2) html += `<span class="page-ellipsis">...</span>`;
+        }
+        for (let p = startPage; p <= endPage; p++) {
+            html += `<button class="page-btn${p === page ? ' active' : ''}" data-page="${p}">${p}</button>`;
+        }
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<span class="page-ellipsis">...</span>`;
+            html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+        }
+        if (page < totalPages) {
+            html += `<button class="page-btn" data-page="${page + 1}"><i class="fas fa-chevron-right"></i></button>`;
+        }
+        paginationContainer.innerHTML = html;
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.onclick = function () {
+                let goPage = Number(btn.getAttribute('data-page'));
+                if (goPage !== page) {
+                    currentPage = goPage;
+                    fetchAndRenderFilms(currentGenre, currentPage);
+                    window.scrollTo(0, 0);
+                }
+            }
+        });
+    }
+});
+</script>
+</body>
+</html>

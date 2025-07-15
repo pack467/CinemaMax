@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaMax Premium - Pencarian Film</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/search.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <!-- Search Section -->
+    <section class="search-container">
+        <div class="search-results">
+            <div class="search-header">
+                <h2 class="search-title">Hasil Pencarian</h2>
+                <div class="result-count">
+                    <span id="result-count-text">
+                        {% if query and total %}
+                            Menampilkan {{ results|length }} dari {{ total }} hasil untuk "{{ query }}"
+                        {% elif query %}
+                            Tidak ada hasil untuk "{{ query }}"
+                        {% elif total %}
+                            Menampilkan {{ results|length }} dari {{ total }} film
+                        {% else %}
+                            Silakan masukkan kata kunci pencarian atau pilih filter.
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="movie-grid" id="movie-grid">
+                {% if results and results|length > 0 %}
+                    {% for film in results %}
+                        <div class="movie-card">
+                            <div class="movie-poster-container">
+                                <a href="{{ url_for('main.watch', id=film.id) }}">
+                                    <img src="{{ url_for('static', filename='covers/' ~ (film.gambar_portrait if film.gambar_portrait else 'No-Image_Availabale-Potrait.png')) }}" alt="{{ film.judul }}" class="movie-poster">
+                                </a>
+                            </div>
+                            <div class="movie-info">
+                                <h3 class="movie-title">{{ film.judul }}</h3>
+                                <div class="movie-meta">
+                                    <span>{{ film.tahun_rilis }}</span>
+                                    <span class="movie-rating"><i class="fas fa-star"></i> {{ "%.1f"|format(film.rating) }}</span>
+                                </div>
+                                <div class="movie-genres">
+                                    {% for genre in film.genres.split(',') %}
+                                        <span class="genre-tag">{{ genre.strip() }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="grid-column: 1/-1; text-align: center; padding: 2rem 0; color: #bbb;">
+                        <i class="far fa-sad-cry fa-3x"></i>
+                        <p style="margin-top:1rem;">Film tidak ditemukan.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                {% if total > per_page %}
+                    {% set page_count = (total // per_page) + (1 if total % per_page > 0 else 0) %}
+                    {% set base_url = url_for('main.search', q=query, genres=selected_genres, year=selected_year, rating=selected_rating) %}
+                    
+                    <!-- Previous button -->
+                    <button class="page-btn" {% if page <= 1 %}disabled{% endif %} onclick="window.location='{{ base_url }}&page={{ page-1 }}'">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    <!-- Page numbers with ellipsis -->
+                    {% set start_page = [1, page - 2]|max %}
+                    {% set end_page = [page_count, page + 2]|min %}
+                    
+                    {% if start_page > 1 %}
+                        <button class="page-btn" onclick="window.location='{{ base_url }}&page=1'">1</button>
+                        {% if start_page > 2 %}
+                            <span class="page-ellipsis">...</span>
+                        {% endif %}
+                    {% endif %}
+                    
+                    {% for i in range(start_page, end_page + 1) %}
+                        <button class="page-btn {% if i == page %}active{% endif %}" onclick="window.location='{{ base_url }}&page={{ i }}'">{{ i }}</button>
+                    {% endfor %}
+                    
+                    {% if end_page < page_count %}
+                        {% if end_page < page_count - 1 %}
+                            <span class="page-ellipsis">...</span>
+                        {% endif %}
+                        <button class="page-btn" onclick="window.location='{{ base_url }}&page={{ page_count }}'">{{ page_count }}</button>
+                    {% endif %}
+                    
+                    <!-- Next button -->
+                    <button class="page-btn" {% if page >= page_count %}disabled{% endif %} onclick="window.location='{{ base_url }}&page={{ page+1 }}'">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Search Filters Sidebar -->
+        <div class="search-filters">
+            <form id="filter-form" method="GET" action="{{ url_for('main.search') }}">
+                <!-- Hidden field untuk query pencarian -->
+                <input type="hidden" name="q" value="{{ query }}">
+                
+                <!-- Genre Filter -->
+                <div class="filter-section">
+                    <h3 class="filter-title"><i class="fas fa-list"></i> Berdasarkan Genre</h3>
+                    <div class="filter-group">
+                        <div class="filter-option">
+                            <input type="checkbox" id="action" name="genres" value="Action" {% if 'Action' in selected_genres %}checked{% endif %}>
+                            <label for="action">Action</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="adventure" name="genres" value="Adventure" {% if 'Adventure' in selected_genres %}checked{% endif %}>
+                            <label for="adventure">Adventure</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="drama" name="genres" value="Drama" {% if 'Drama' in selected_genres %}checked{% endif %}>
+                            <label for="drama">Drama</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="comedy" name="genres" value="Comedy" {% if 'Comedy' in selected_genres %}checked{% endif %}>
+                            <label for="comedy">Comedy</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="sci-fi" name="genres" value="Sci-Fi" {% if 'Sci-Fi' in selected_genres %}checked{% endif %}>
+                            <label for="sci-fi">Sci-Fi</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="horror" name="genres" value="Horror" {% if 'Horror' in selected_genres %}checked{% endif %}>
+                            <label for="horror">Horror</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="romance" name="genres" value="Romance" {% if 'Romance' in selected_genres %}checked{% endif %}>
+                            <label for="romance">Romance</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="thriller" name="genres" value="Thriller" {% if 'Thriller' in selected_genres %}checked{% endif %}>
+                            <label for="thriller">Thriller</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="fantasy" name="genres" value="Fantasy" {% if 'Fantasy' in selected_genres %}checked{% endif %}>
+                            <label for="fantasy">Fantasy</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="crime" name="genres" value="Crime" {% if 'Crime' in selected_genres %}checked{% endif %}>
+                            <label for="crime">Crime</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Year Filter -->
+                <div class="filter-section">
+                    <h3 class="filter-title"><i class="fas fa-calendar"></i> Tahun Rilis</h3>
+                    <div class="filter-group">
+                        <div class="filter-option">
+                            <input type="radio" id="all-years" name="year" value="all" {% if selected_year == 'all' %}checked{% endif %}>
+                            <label for="all-years">Semua Tahun</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="2025" name="year" value="2025" {% if selected_year == '2025' %}checked{% endif %}>
+                            <label for="2025">2025</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="2024" name="year" value="2024" {% if selected_year == '2024' %}checked{% endif %}>
+                            <label for="2024">2024</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="2023" name="year" value="2023" {% if selected_year == '2023' %}checked{% endif %}>
+                            <label for="2023">2023</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="2022" name="year" value="2022" {% if selected_year == '2022' %}checked{% endif %}>
+                            <label for="2022">2022</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="2021" name="year" value="2021" {% if selected_year == '2021' %}checked{% endif %}>
+                            <label for="2021">2021</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="2020" name="year" value="2020" {% if selected_year == '2020' %}checked{% endif %}>
+                            <label for="2020">2020</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rating Filter -->
+                <div class="filter-section">
+                    <h3 class="filter-title"><i class="fas fa-star"></i> Rating</h3>
+                    <div class="filter-group">
+                        <div class="filter-option">
+                            <input type="radio" id="all-ratings" name="rating" value="all" {% if selected_rating == 'all' %}checked{% endif %}>
+                            <label for="all-ratings">Semua Rating</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-9" name="rating" value="9-10" {% if selected_rating == '9-10' %}checked{% endif %}>
+                            <label for="rating-9">9.0 - 10.0</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-8" name="rating" value="8-9" {% if selected_rating == '8-9' %}checked{% endif %}>
+                            <label for="rating-8">8.0 - 8.9</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-7" name="rating" value="7-8" {% if selected_rating == '7-8' %}checked{% endif %}>
+                            <label for="rating-7">7.0 - 7.9</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-6" name="rating" value="6-7" {% if selected_rating == '6-7' %}checked{% endif %}>
+                            <label for="rating-6">6.0 - 6.9</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-5" name="rating" value="5-6" {% if selected_rating == '5-6' %}checked{% endif %}>
+                            <label for="rating-5">5.0 - 5.9</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-4" name="rating" value="4-5" {% if selected_rating == '4-5' %}checked{% endif %}>
+                            <label for="rating-4">4.0 - 4.9</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-3" name="rating" value="3-4" {% if selected_rating == '3-4' %}checked{% endif %}>
+                            <label for="rating-3">3.0 - 3.9</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-2" name="rating" value="2-3" {% if selected_rating == '2-3' %}checked{% endif %}>
+                            <label for="rating-2">2.0 - 2.9</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-1" name="rating" value="1-2" {% if selected_rating == '1-2' %}checked{% endif %}>
+                            <label for="rating-1">1.0 - 1.9</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="radio" id="rating-0" name="rating" value="0-1" {% if selected_rating == '0-1' %}checked{% endif %}>
+                            <label for="rating-0">0.0 - 0.9</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+    
+    {% include 'footer.html' %}
+    
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script>
+        // Auto-submit form when filters change
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('filter-form');
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            const radios = form.querySelectorAll('input[type="radio"]');
+            
+            // Add event listeners to all filter inputs
+            [...checkboxes, ...radios].forEach(input => {
+                input.addEventListener('change', function() {
+                    // Small delay to allow for better UX
+                    setTimeout(() => {
+                        form.submit();
+                    }, 100);
+                });
+            });
+        });
+
+        function resetFilters() {
+            // Reset all checkboxes
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+
+            // Reset radio buttons to default
+            document.getElementById('all-years').checked = true;
+            document.getElementById('all-ratings').checked = true;
+
+            // Submit the form to apply reset
+            const form = document.getElementById('filter-form');
+            form.submit();
+        }
+
+        // Manual apply filters function (for the button)
+        function applyFilters() {
+            const form = document.getElementById('filter-form');
+            form.submit();
+        }
+    </script>
+
+    <script src="{{ url_for('static', filename='scripts/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/profileDropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/scrollToTop.js') }}"></script>
+</body>
+</html>

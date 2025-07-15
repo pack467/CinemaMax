@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaMax Premium - Streaming Film Terbaik</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/serial.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .page-ellipsis {
+            display:inline-block;
+            min-width:2rem;
+            text-align:center;
+            color:#999;
+            font-size:1rem;
+            vertical-align:middle;
+            pointer-events: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <main class="serial-container">
+        <!-- Content Section -->
+        <section class="content-section">
+            <div class="content-header">
+                <h2 id="contentTitle">Serial Trending</h2>
+                <div class="title-underline"></div>
+                <p id="contentDescription">Serial yang sedang populer dan banyak ditonton oleh pengguna CinemaMax.</p>
+            </div>
+
+            <!-- Filter Buttons -->
+            <section class="filter-section">
+                <button class="filter-btn active" id="trendingBtn">Trending</button>
+                <button class="filter-btn" id="newBtn">Baru</button>
+                <button class="filter-btn" id="recommendedBtn">Rekomendasi</button>
+            </section>
+
+            <!-- Movie Grid -->
+            <div class="movie-grid" id="movieGrid"></div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="paginationContainer"></div>
+        </section>
+    </main>
+
+    {% include 'footer.html' %}
+
+    <!-- Scroll to top button -->
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+<script src="{{ url_for('static', filename='scripts/animations.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/menu.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/profileDropdown.js') }}"></script>
+<script src="{{ url_for('static', filename='scripts/scrollToTop.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const movieGrid = document.getElementById('movieGrid');
+    const paginationContainer = document.getElementById('paginationContainer');
+    const titleEl = document.getElementById('contentTitle');
+    const descEl = document.getElementById('contentDescription');
+    let currentFilter = 'trending';
+    let currentPage = 1;
+
+    const FILTER_INFO = {
+        trending: {
+            title: "Serial Trending",
+            desc: "Serial yang sedang populer dan banyak ditonton oleh pengguna CinemaMax."
+        },
+        new: {
+            title: "Serial Terbaru",
+            desc: "Serial terbaru di CinemaMax."
+        },
+        recommended: {
+            title: "Serial Rekomendasi",
+            desc: "Serial rekomendasi terbaik berdasarkan riwayat tontonan Anda."
+        }
+    };
+
+    function fetchFilms(filter, page) {
+        fetch(`/serial_data?filter=${filter}&page=${page}`)
+            .then(response => response.json())
+            .then(data => {
+                renderMovieGrid(data.films);
+                renderPagination(data.total, page);
+            });
+    }
+
+    function renderMovieGrid(films) {
+        movieGrid.innerHTML = '';
+        if (!films.length) {
+            movieGrid.innerHTML = '<p style="text-align:center;">Tidak ada film.</p>';
+            return;
+        }
+        films.forEach(film => {
+            let genresHtml = (film.genres_list || []).map(g => `<span class="genre">${g}</span>`).join('');
+            movieGrid.innerHTML += `
+                <a href="/watch?id=${film.id}" class="movie-card">
+                    <img src="/static/covers/${film.gambar_portrait || 'No-Image_Availbale-Potrait.png'}" alt="${film.judul}" class="movie-poster">
+                    <div class="movie-info">
+                        <h3 class="movie-title">${film.judul}</h3>
+                        <div class="movie-meta">
+                            <span>${film.tahun_rilis}</span>
+                            <span class="movie-rating"><i class="fas fa-star"></i> ${Number(film.rating).toFixed(1)}</span>
+                        </div>
+                        <div class="genres">
+                            ${genresHtml}
+                        </div>
+                    </div>
+                </a>`;
+        });
+    }
+
+    function renderPagination(total, page) {
+        const totalPages = Math.ceil(total / 18);
+        let html = '';
+        if (totalPages <= 1) { paginationContainer.innerHTML = ''; return; }
+
+        // Previous button
+        if (page > 1) {
+            html += `<button class="page-btn" data-page="${page - 1}"><i class="fas fa-chevron-left"></i></button>`;
+        }
+
+        let startPage = Math.max(1, page - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        // If startPage > 1, show 1 ... 
+        if (startPage > 1) {
+            html += `<button class="page-btn" data-page="1">1</button>`;
+            if (startPage > 2) html += `<span class="page-ellipsis">...</span>`;
+        }
+        // Main page buttons
+        for (let p = startPage; p <= endPage; p++) {
+            html += `<button class="page-btn${p === page ? ' active' : ''}" data-page="${p}">${p}</button>`;
+        }
+        // If endPage < totalPages, show ... last
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) html += `<span class="page-ellipsis">...</span>`;
+            html += `<button class="page-btn" data-page="${totalPages}">${totalPages}</button>`;
+        }
+
+        // Next button
+        if (page < totalPages) {
+            html += `<button class="page-btn" data-page="${page + 1}"><i class="fas fa-chevron-right"></i></button>`;
+        }
+        paginationContainer.innerHTML = html;
+
+        // Add event listeners for pagination
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.onclick = function () {
+                let goPage = Number(btn.getAttribute('data-page'));
+                if (goPage !== page) {
+                    currentPage = goPage;
+                    fetchFilms(currentFilter, currentPage);
+                    window.scrollTo(0, 0);
+                }
+            }
+        });
+    }
+
+    // Filter button events
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.id === 'trendingBtn' ? 'trending' : btn.id === 'newBtn' ? 'new' : 'recommended';
+            currentPage = 1;
+            // Update title & description
+            titleEl.textContent = FILTER_INFO[currentFilter].title;
+            descEl.textContent = FILTER_INFO[currentFilter].desc;
+            fetchFilms(currentFilter, currentPage);
+        });
+    });
+
+    // Initial fetch & set title/desc
+    titleEl.textContent = FILTER_INFO[currentFilter].title;
+    descEl.textContent = FILTER_INFO[currentFilter].desc;
+    fetchFilms(currentFilter, currentPage);
+});
+</script>
+</body>
+</html>

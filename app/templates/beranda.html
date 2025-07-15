@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaMax Premium - Streaming Film Terbaik</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/beranda.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-slider">
+            <div class="hero-slides" id="heroSlides">
+                {% for film in banner %}
+                <div class="hero-slide">
+                    <div class="hero-backdrop"
+                        style="background-image: url('{{ url_for('static', filename='covers/' ~ (film['gambar_landscape'] if film['gambar_landscape'] else 'No-Image_Availabale-Landscape.png')) }}');">
+                    </div>
+                    <div class="hero-overlay">
+                        <div class="hero-content">
+                            <span class="hero-badge">
+                                {% if loop.index == 1 %}Trending{% elif loop.index == 2 %}Terbaru{% else %}Rekomendasi{% endif %}
+                            </span>
+                            <h1 class="hero-title">{{ film['judul'] or '-' }}</h1>
+                            <div class="hero-info">
+                                <span>{{ film['tahun_rilis'] or '-' }}</span>
+                                <span class="hero-rating"><i class="fas fa-star"></i> {{ film['rating'] or '-' }}</span>
+                                <span>{{ film['durasi'] or '-' }}m</span>
+                                <span>{{ film['genres'] or '-' }}</span>
+                            </div>
+                            <p class="hero-description">{{ film['deskripsi'] or '' }}</p>
+                            {% if film['id'] %}
+                            <div class="hero-actions">
+                                <a href="{{ url_for('main.watch', id=film['id']) }}" class="btn btn-primary"><i class="fas fa-play"></i> Tonton Sekarang</a>
+                                <button class="btn btn-secondary"><i class="fas fa-plus"></i> Tambah ke Daftar</button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="hero-nav">
+                <div class="hero-nav-btn" id="prevSlide">
+                    <i class="fas fa-chevron-left"></i>
+                </div>
+                <div class="hero-nav-btn" id="nextSlide">
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <!-- Dots Indicator -->
+            <div class="hero-controls">
+                <div class="hero-dot active" data-index="0"></div>
+                <div class="hero-dot" data-index="1"></div>
+                <div class="hero-dot" data-index="2"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- REKOMENDASI -->
+    <section class="movie-section">
+        <div class="section-header">
+            <h2 class="section-title">Rekomendasi untuk Anda</h2>
+            <a href="{{ url_for('main.serial') }}" class="view-all">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+        </div>
+        <div class="movie-row">
+            {% for film in rekomendasi %}
+            <a href="{{ url_for('main.watch', id=film['id']) }}" class="movie-card">
+                <div class="movie-poster-container">
+                    <img src="{{ url_for('static', filename='covers/' ~ (film['gambar_portrait'] if film['gambar_portrait'] else 'No-Image_Availabale-Potrait.png')) }}" alt="{{ film['judul'] }}" class="movie-poster">
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title">{{ film['judul'] }}</h3>
+                    <div class="movie-meta">
+                        <span>{{ film['tahun_rilis'] }}</span>
+                        <span class="movie-rating"><i class="fas fa-star"></i> {{ film['rating'] }}</span>
+                    </div>
+                    <div class="movie-genres">
+                        {% for genre in film['genres'].split(',') %}
+                        <span class="genre-tag">{{ genre.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- TERBARU -->
+    <section class="movie-section">
+        <div class="section-header">
+            <h2 class="section-title">Rilisan Baru</h2>
+            <a href="{{ url_for('main.serial') }}" class="view-all">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+        </div>
+        <div class="movie-row">
+            {% for film in terbaru %}
+            <a href="{{ url_for('main.watch', id=film['id']) }}" class="movie-card">
+                <div class="movie-poster-container">
+                    <img src="{{ url_for('static', filename='covers/' ~ (film['gambar_portrait'] if film['gambar_portrait'] else 'No-Image_Availabale-Potrait.png')) }}" alt="{{ film['judul'] }}" class="movie-poster">
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title">{{ film['judul'] }}</h3>
+                    <div class="movie-meta">
+                        <span>{{ film['tahun_rilis'] }}</span>
+                        <span class="movie-rating"><i class="fas fa-star"></i> {{ film['rating'] }}</span>
+                    </div>
+                    <div class="movie-genres">
+                        {% for genre in film['genres'].split(',') %}
+                        <span class="genre-tag">{{ genre.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- TRENDING -->
+    <section class="movie-section">
+        <div class="section-header">
+            <h2 class="section-title">Sedang Tren</h2>
+            <a href="{{ url_for('main.serial') }}" class="view-all">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+        </div>
+        <div class="movie-row">
+            {% for film in tren %}
+            <a href="{{ url_for('main.watch', id=film['id']) }}" class="movie-card">
+                <div class="movie-poster-container">
+                    <img src="{{ url_for('static', filename='covers/' ~ (film['gambar_portrait'] if film['gambar_portrait'] else 'No-Image_Availabale-Potrait.png')) }}" alt="{{ film['judul'] }}" class="movie-poster">
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title">{{ film['judul'] }}</h3>
+                    <div class="movie-meta">
+                        <span>{{ film['tahun_rilis'] }}</span>
+                        <span class="movie-rating"><i class="fas fa-star"></i> {{ film['rating'] }}</span>
+                    </div>
+                    <div class="movie-genres">
+                        {% for genre in film['genres'].split(',') %}
+                        <span class="genre-tag">{{ genre.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% include 'footer.html' %}
+
+    <!-- Script JS -->
+    <script src="{{ url_for('static', filename='scripts/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/slider.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/profileDropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/scrollToTop.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/rating.js') }}"></script>
+</body>
+</html>

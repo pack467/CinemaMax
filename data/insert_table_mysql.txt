@@ -1,0 +1,1 @@
+mysql -u root -p db_cinemamax < "D:\Skripsi Deni Fahrizal\CinemaMax\data\riwayat_tonton.sql"

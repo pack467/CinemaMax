@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaMax - Login & Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Header -->
+        <div class="auth-header">
+            <div class="logo">
+                <i class="fas fa-film"></i>
+                <h1>CinemaMax</h1>
+            </div>
+            <p>Masuk untuk mulai menonton</p>
+        </div>
+        
+        <!-- Tabs (hanya visual, tidak bisa diklik) -->
+        <div class="auth-tabs">
+            <div class="auth-tab active" id="login-tab">Masuk</div>
+            <div class="auth-tab" id="register-tab">Daftar</div>
+        </div>
+        
+        <!-- Pesan Flash (opsional, tampilkan jika ada) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div style="padding: 8px 24px;">
+              {% for category, message in messages %}
+                <div class="flash flash-{{ category }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Content -->
+        <div class="auth-content">
+            <!-- Login Form -->
+            <div class="auth-form active" id="login-form">
+                <h2 class="form-title">Masuk ke Akun</h2>
+                <p class="form-subtitle">Silakan masuk untuk melanjutkan</p>
+
+                <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" class="form-control" name="email" placeholder="Alamat Email" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="login-password" class="form-control" name="password" placeholder="Password" required>
+                            <span class="password-toggle" id="login-password-toggle">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="remember-forgot">
+                        <div class="remember-me">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Ingat saya</label>
+                        </div>
+                        <a href="#" class="forgot-password">Lupa password?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i> Masuk
+                    </button>
+                </form>
+
+                <div class="auth-switch">
+                    Belum punya akun? <a href="#" data-tab="register">Daftar sekarang</a>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div class="auth-form" id="register-form">
+                <h2 class="form-title">Buat Akun Baru</h2>
+                <p class="form-subtitle">Isi data berikut untuk mendaftar</p>
+
+                <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}">
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" class="form-control" name="nama" placeholder="Nama Lengkap" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" class="form-control" name="email" placeholder="Alamat Email" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="register-password" class="form-control" name="password" placeholder="Buat Password" required>
+                            <span class="password-toggle" id="register-password-toggle">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" class="form-control" name="password_confirm" placeholder="Konfirmasi Password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="remember-me">
+                            <input type="checkbox" id="terms" name="terms" required>
+                            <label for="terms">Saya menyetujui Syarat & Ketentuan</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Daftar Sekarang
+                    </button>
+                </form>
+
+                <div class="auth-switch">
+                    Sudah punya akun? <a href="#" data-tab="login">Masuk sekarang</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="auth-footer">
+            &copy; 2025 CinemaMax. Hak Cipta Dilindungi.
+        </div>
+    </div>
+    <!-- Gunakan url_for untuk file JS -->
+    <script src="{{ url_for('static', filename='scripts/login.js') }}"></script>
+</body>
+</html>

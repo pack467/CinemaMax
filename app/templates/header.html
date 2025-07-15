@@ -1,0 +1,63 @@
+<header>
+    <div class="logo">
+        <i class="fas fa-play-circle"></i>
+        <h1>CinemaMax</h1>
+    </div>
+    <nav>
+        <ul id="navMenu">
+            <li>
+                <a href="{{ url_for('main.beranda') }}" class="{% if request.endpoint == 'main.beranda' %}active{% endif %}">
+                    <i class="fas fa-home"></i> Beranda
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.serial') }}" class="{% if request.endpoint == 'main.serial' %}active{% endif %}">
+                    <i class="fas fa-tv"></i> Serial
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.genre') }}" class="{% if request.endpoint == 'main.genre' %}active{% endif %}">
+                    <i class="fas fa-list"></i> Genre
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.favorite') }}" class="{% if request.endpoint == 'main.favorite' %}active{% endif %}">
+                    <i class="fas fa-heart"></i> Favorit
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="header-actions">
+        <form class="search-bar" action="{{ url_for('main.search') }}" method="get" style="margin:0;">
+            <i class="fas fa-search"></i>
+            <input
+                type="text"
+                name="q"
+                placeholder="Cari film..."
+                value="{{ request.args.get('q', '') if request.endpoint == 'main.search' else '' }}"
+                autocomplete="off"
+                required>
+        </form>
+        <div class="user-profile" id="userProfile">
+            {% if user and user.foto_profil %}
+                <div class="user-avatar">
+                    <img src="{{ url_for('static', filename='images/' ~ user.foto_profil) }}"
+                         alt="Foto Profil" style="width:32px; height:32px; object-fit:cover; border-radius:50%;">
+                </div>
+            {% else %}
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+            {% endif %}
+            <span>{{ user.nama_pengguna if user else user_name }}</span>
+            <!-- Dropdown Menu -->
+            <div class="profile-dropdown" id="profileDropdown">
+                <a href="{{ url_for('main.profile') }}"><i class="fas fa-user"></i> Profil</a>
+                <a href="#"><i class="fas fa-cog"></i> Pengaturan</a>
+                <a href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+        <div class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </div>
+    </div>
+</header>

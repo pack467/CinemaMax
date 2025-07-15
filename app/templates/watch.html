@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ film.judul }} - CinemaMax Premium</title>
+    <!-- Tambahkan Font Awesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/watch.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <!-- Player Section -->
+    <div class="player-container">
+        <div class="player-wrapper">
+            <div class="player" id="moviePlayer">
+                <video id="videoPlayer" width="100%" height="100%"
+                       poster="{{ url_for('static', filename='covers/' ~ (film.gambar_landscape if film.gambar_landscape else 'No-Image_Availabale-Landscape.png')) }}" controls>
+                    {% if film.trailer_film %}
+                    <source src="{{ url_for('static', filename='videos/' ~ film.trailer_film) }}" type="video/mp4">
+                    {% endif %}
+                    Browser Anda tidak mendukung pemutaran video.
+                </video>
+                <div id="videoErrorMsg"
+                     style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: #fff; padding: 1rem 1.5rem; border-radius: .5rem; font-size: 1.2rem;">
+                    This video does not exist
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movie Info Section -->
+    <section class="movie-info-section">
+        <div class="movie-poster">
+            <img src="{{ url_for('static', filename='covers/' ~ (film.gambar_portrait if film.gambar_portrait else 'No-Image_Availabale-Potrait.png')) }}" alt="{{ film.judul }} Poster">
+        </div>
+        <div class="movie-details">
+            <h1 class="movie-title">{{ film.judul }}</h1>
+            <div class="movie-meta">
+                <span>{{ film.tahun_rilis }}</span>
+                <span class="movie-rating"><i class="fas fa-star"></i> {{ "%.1f"|format(film.rating) }}</span>
+                <span>{{ film.durasi }}m</span>
+                <span>{{ film.genres }}</span>
+            </div>
+            <p class="movie-description">{{ film.deskripsi or '' }}</p>
+            <div class="movie-actions">
+                <button class="action-btn primary-btn" id="playBtn">
+                    <i class="fas fa-play"></i> Tonton
+                </button>
+                <button class="action-btn secondary-btn" id="favoriteBtn" data-favorite="{{ 1 if is_favorite else 0 }}">
+                    {% if is_favorite %}
+                        <i class="fas fa-heart"></i> Favorit
+                    {% else %}
+                        <i class="fas fa-plus"></i> Tambah ke Favorit
+                    {% endif %}
+                </button>
+                <button class="action-btn secondary-btn">
+                    <i class="fas fa-share-alt"></i> Bagikan
+                </button>
+            </div>
+            <div class="movie-stats">
+                <div class="stat-item"><span class="stat-label">Negara</span><span class="stat-value">{{ film.negara or '-' }}</span></div>
+                <div class="stat-item"><span class="stat-label">Durasi</span><span class="stat-value">{{ film.durasi }} menit</span></div>
+                <div class="stat-item"><span class="stat-label">Kualitas</span><span class="stat-value">HD</span></div>
+                <div class="stat-item"><span class="stat-label">Genre</span><span class="stat-value">{{ film.genres }}</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Movies -->
+    <section class="related-movies">
+        <div class="section-header">
+            <h2 class="section-title">Film Direkomendasi</h2>
+        </div>
+        <div class="movie-grid">
+            {% for film_item in related_films %}
+            <div class="movie-card">
+                <a href="{{ url_for('main.watch', id=film_item.id) }}">
+                    <img src="{{ url_for('static', filename='covers/' ~ (film_item.gambar_portrait if film_item.gambar_portrait else 'No-Image_Availabale-Potrait.png')) }}" alt="Movie Poster" class="movie-card-poster">
+                </a>
+                <div class="movie-card-info">
+                    <h3 class="movie-card-title">{{ film_item.judul }}</h3>
+                    <div class="movie-card-meta">
+                        <span>{{ film_item.tahun_rilis }}</span>
+                        <span class="movie-card-rating"><i class="fas fa-star"></i> {{ "%.1f"|format(film_item.rating) }}</span>
+                    </div>
+                    <div class="genres">
+                        {% for genre in film_item.genres.split(',') %}
+                        <span class="genre">{{ genre.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {% include 'footer.html' %}
+
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts/player.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/profileDropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/scrollToTop.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/animations.js') }}"></script>
+    <script>
+        // Auto play video saat tombol "Tonton" ditekan
+        document.getElementById('playBtn').onclick = function() {
+            var v = document.getElementById('videoPlayer');
+            if (v) v.play();
+        };
+
+        // AJAX Toggle Favorite
+        document.addEventListener('DOMContentLoaded', function () {
+            var favBtn = document.getElementById('favoriteBtn');
+            var isFavorite = favBtn.getAttribute('data-favorite') === '1';
+
+            function setBtn(state) {
+                if (state) {
+                    favBtn.innerHTML = '<i class="fas fa-heart"></i> Favorit';
+                    favBtn.style.background = '#d7263d';
+                    favBtn.style.color = 'white';
+                    favBtn.setAttribute('data-favorite', '1');
+                } else {
+                    favBtn.innerHTML = '<i class="fas fa-plus"></i> Tambah ke Favorit';
+                    favBtn.style.background = '';
+                    favBtn.style.color = '';
+                    favBtn.setAttribute('data-favorite', '0');
+                }
+            }
+            setBtn(isFavorite);
+
+            favBtn.addEventListener('click', function () {
+                favBtn.disabled = true;
+                fetch("{{ url_for('main.toggle_favorite') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "film_id={{ film.id }}"
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        isFavorite = data.is_favorite;
+                        setBtn(isFavorite);
+                    } else {
+                        alert(data.msg || "Gagal update favorite!");
+                    }
+                })
+                .catch(() => {
+                    alert("Terjadi error. Silakan coba lagi.");
+                })
+                .finally(() => {
+                    favBtn.disabled = false;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

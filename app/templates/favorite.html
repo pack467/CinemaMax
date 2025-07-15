@@ -1,0 +1,141 @@
+<!DOCTYPE html> 
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaMax Premium - Film Favorit</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/favorite.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+    <style>
+    /* Supaya pointer pada seluruh card */
+    .movie-card-link {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+        transition: box-shadow .2s;
+    }
+    .movie-card-link:hover {
+        box-shadow: 0 0 16px #d7263d33;
+    }
+    .movie-card .remove-favorite {
+        z-index: 3; 
+        position: absolute; 
+        top: 12px; 
+        right: 12px;
+        background: #fff;
+        border-radius: 50%;
+        padding: 6px;
+        cursor: pointer;
+    }
+    .movie-card {
+        position: relative;
+    }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <!-- Favorites Section -->
+    <section class="favorites-container">
+        <div class="favorites-header">
+            <h1 class="favorites-title">Film Favorit Anda</h1>
+            <p class="favorites-subtitle">
+                Koleksi film favorit pilihan Anda. Simpan, tonton ulang, atau hapus film dari daftar favorit kapan saja.
+            </p>
+        </div>
+        
+        {% if favorite_films and favorite_films|length > 0 %}
+        <div class="movie-grid">
+            {% for film in favorite_films %}
+            <a href="{{ url_for('main.watch', id=film.id) }}" class="movie-card-link">
+                <div class="movie-card">
+                    <div class="card-header">
+                        <div class="remove-favorite" title="Hapus dari Favorit"
+                             onclick="removeFavorite({{ film.id }}, this); event.preventDefault(); event.stopPropagation();">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div class="favorite-badge" title="Favorit">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                    </div>
+                    <div class="movie-poster-container">
+                        <img src="{{ url_for('static', filename='covers/' ~ (film.gambar_portrait if film.gambar_portrait else 'No-Image_Availabale-Potrait.png')) }}" alt="{{ film.judul }}" class="movie-poster">
+                    </div>
+                    <div class="movie-info">
+                        <h3 class="movie-title">{{ film.judul }}</h3>
+                        <div class="movie-meta">
+                            <span>{{ film.tahun_rilis }}</span>
+                            <span class="movie-rating"><i class="fas fa-star"></i> {{ "%.1f"|format(film.rating) }}</span>
+                        </div>
+                        <div class="movie-genres">
+                            {% for genre in film.genres.split(',') %}
+                            <span class="genre-tag">{{ genre.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-favorites">
+            <div class="empty-icon">
+                <i class="far fa-heart"></i>
+            </div>
+            <h3 class="empty-title">Daftar Favorit Kosong</h3>
+            <p class="empty-description">
+                Anda belum menambahkan film favorit. Jelajahi koleksi film kami dan tambahkan film favorit Anda untuk ditonton nanti.
+            </p>
+            <a href="{{ url_for('main.beranda') }}" class="explore-btn">
+                <i class="fas fa-film"></i> Jelajahi Film
+            </a>
+        </div>
+        {% endif %}
+    </section>
+
+    {% include 'footer.html' %}
+
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+    
+    <script src="{{ url_for('static', filename='scripts/animations.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/menu.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/profileDropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='scripts/scrollToTop.js') }}"></script>
+    <script>
+    function removeFavorite(film_id, el) {
+        fetch('{{ url_for("main.toggle_favorite") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'film_id=' + encodeURIComponent(film_id)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                // Card parent = movie-card-link (a), hapus card
+                el.closest('.movie-card-link').remove();
+                // Jika semua card sudah dihapus, tampilkan pesan kosong
+                if (document.querySelectorAll('.movie-card-link').length === 0) {
+                    document.querySelector('.movie-grid').style.display = 'none';
+                    document.querySelector('.empty-favorites').style.display = 'block';
+                }
+            } else {
+                alert(res.msg || 'Gagal menghapus favorit.');
+            }
+        });
+    }
+    // Sembunyikan pesan kosong jika ada data
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelectorAll('.movie-card-link').length > 0) {
+            var emptyDiv = document.querySelector('.empty-favorites');
+            if (emptyDiv) emptyDiv.style.display = 'none';
+        }
+    });
+    </script>
+</body>
+</html>
